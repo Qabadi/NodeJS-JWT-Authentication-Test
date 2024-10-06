@@ -26,6 +26,7 @@
             <div>
                 <button onclick="login()">Login</button>
                 <button onclick="getDashboard()">Get Dashboard</button>
+                <button onclick="getSetting()">Get Setting</button>
             </div>
         </main>
     </div>
@@ -52,6 +53,10 @@
 
         function getDashboard() {
             const token = localStorage.getItem('jwt');
+            if (!token || getExpired(token)){
+                window.location.reload();
+                return;
+            }
             axios.get('/api/dashboard', {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -60,9 +65,37 @@
                 if (res && res.data && res.data.success) {
                     document.querySelector('h1.row').innerHTML = 'Dashboard';
                     document.querySelector('main').innerHTML = res.data.myContent;
+                    history.pushState(null, null, 'dashboard');
                 }
             });
         }
+
+        function getSetting(){
+            const token = localStorage.getItem('jwt');
+            if (!token || getExpired(token)){
+                window.location.reload();
+                return;
+            }
+            axios.get('/api/setting', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }).then(res => {
+                if (res && res.data && res.data.success) {
+                    document.querySelector('h1.row').innerHTML = 'Settings';
+                    document.querySelector('main').innerHTML = res.data.myContent;
+                    history.pushState(null, null, 'settings');
+                }
+            });
+        }
+
+        function getExpired(token){
+            const load = JSON.parse(atob(token.split('.')[1]));
+            const currentTime = Math.floor(Date.now() / 1000); 
+            return load.exp < currentTime; 
+        }
+
+
     </script>
 
 </body>
